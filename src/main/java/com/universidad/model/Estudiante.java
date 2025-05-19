@@ -15,7 +15,7 @@ import jakarta.persistence.*; // Importa las anotaciones de JPA para la persiste
 
 @Getter // Genera un getter para todos los campos de la clase
 @Setter // Genera un setter para todos los campos de la clase
-//@Data // Genera getters, setters, toString, equals y hashCode
+// @Data // Genera getters, setters, toString, equals y hashCode
 @EqualsAndHashCode(callSuper = true) // Genera métodos equals y hashCode, incluyendo los campos de la clase padre
 @NoArgsConstructor // Genera un constructor sin argumentos
 @AllArgsConstructor // Genera un constructor con todos los argumentos
@@ -31,7 +31,7 @@ import jakarta.persistence.*; // Importa las anotaciones de JPA para la persiste
 @Entity // Anotación que indica que esta clase es una entidad JPA
 @Table(name = "estudiante") // Nombre de la tabla en la base de datos
 public class Estudiante extends Persona { // Define la clase Estudiante que extiende de Persona
-    
+
     /**
      * Número de inscripción único del estudiante.
      */
@@ -47,9 +47,9 @@ public class Estudiante extends Persona { // Define la clase Estudiante que exti
     /**
      * Usuario que dio de alta al estudiante.
      */
-    @Column(name = "usuario_alta") 
+    @Column(name = "usuario_alta")
     private String usuarioAlta; // Campo para almacenar el usuario que dio de alta al estudiante
-    
+
     /**
      * Fecha de alta del estudiante.
      */
@@ -57,7 +57,7 @@ public class Estudiante extends Persona { // Define la clase Estudiante que exti
     @Temporal(TemporalType.DATE) // Tipo de dato fecha
     @Basic(optional = false) // Columna no nula
     private LocalDate fechaAlta; // Campo para almacenar la fecha de alta del estudiante
-    
+
     /**
      * Usuario que modificó al estudiante.
      */
@@ -71,13 +71,13 @@ public class Estudiante extends Persona { // Define la clase Estudiante que exti
     @Temporal(TemporalType.DATE) // Tipo de dato fecha
     @Basic(optional = true) // Columna opcional
     private LocalDate fechaModificacion; // Campo para almacenar la fecha de modificación del estudiante
-    
+
     /**
      * Usuario que dio de baja al estudiante.
      */
     @Column(name = "usuario_baja") // Columna opcional
     private String usuarioBaja; // Campo para almacenar el usuario que dio de baja al estudiante
-    
+
     /**
      * Fecha de baja del estudiante.
      */
@@ -98,11 +98,25 @@ public class Estudiante extends Persona { // Define la clase Estudiante que exti
     @ManyToMany(fetch = FetchType.LAZY) // Relación muchos a muchos con la entidad Materia
     @JoinTable(name = "estudiante_materia", // Nombre de la tabla intermedia
             joinColumns = @JoinColumn(name = "id_estudiante"), // Columna que referencia al estudiante
-            inverseJoinColumns = @JoinColumn(name = "id_materia")  // Columna que referencia a la materia 
+            inverseJoinColumns = @JoinColumn(name = "id_materia") // Columna que referencia a la materia
     )
     private List<Materia> materias; // Lista de materias asociadas al estudiante
 
-    /*@Version
-    private Long version; // Campo para manejar la versión de la entidad, útil para el control de concurrencia*/
+    /*
+     * @Version
+     * private Long version; // Campo para manejar la versión de la entidad, útil
+     * para el control de concurrencia
+     */
+
+    /**
+     * Verifica si el estudiante está activo.
+     * Un estudiante se considera activo si su estado es "ACTIVO" y no tiene fecha
+     * de baja.
+     * 
+     * @return true si el estudiante está activo, false en caso contrario
+     */
+    public boolean isActivo() {
+        return "ACTIVO".equalsIgnoreCase(this.estado) && this.fechaBaja == null;
+    }
 
 }

@@ -1,42 +1,281 @@
-2025# Proyecto CRUD - Universidad
+# Sistema de Gestión Universitaria
 
-Este repositorio contiene la base del proyecto Universitario utilizando **Spring Boot**. Cada grupo debe trabajar en su propia rama según las instrucciones del docente.
+## Descripción
+Sistema de gestión universitaria que permite administrar estudiantes, profesores, materias e inscripciones.
 
----
+## Tecnologías Utilizadas
+- Java 21
+- Spring Boot 3.2.3
+- PostgreSQL
+- Redis (Caché)
+- JWT (Autenticación)
+- Swagger (Documentación API)
 
-## 🚀 Objetivo
+## Configuración del Entorno
 
-Completar las operaciones requeridas sobre el Proyecto.
+### Requisitos Previos
+- Java 21 o superior
+- PostgreSQL 12 o superior
+- Redis 6 o superior
+- Maven 3.8 o superior
 
-**Grupos y ramas asignadas**
+### Configuración de la Base de Datos
+1. Crear base de datos PostgreSQL:
+```sql
+CREATE DATABASE universidad;
+```
 
-|**Grupo**|**Ramaogiana**|**Integrantes**|
-| :-: | :-: | :-: |
-|01|grupo-01-springb|[Enrique Rafael Fernández Chiri, Nohemy Ruth Mamani Apaza, Samantha Rousse Gironda Mina, Josué Misael López Huanca, Luz Belén Chávez Patzi, Oscar Joel Choque Flores, Cristhian Pablo Álvarez Guarachi]|
-|02|grupo-02-springb|[Maya Cádiz, Leandro Chávez, Masiel Chirinos, Sergio Luque, Jordy Miranda, Saúl Sánchez, Elizabeth Suzaño]|
-|03|grupo-03-springb|[Bautista Mollo Denzel Guden, Copa Quispe Esther Sara, Guarachi Arguata Alberth, Reyes Barja Carlos Eduardo, Rojas Condoria Fidel Angel, Tancara Suñagua Joel Hernan.]|
-|04|grupo-04-springb|[Marcelo Alejandro Villarroel Gutiérrez, Jonathan Gerson Gutiérrez Condori, Betzabe Gutiérrez Morales, Mikaela Belén Córdova Vásquez, Jhessica Coral Villca Palma, Karen Rocio Catari Calderón, Abigail Blanca Mamani Mamani]|
-|05|grupo-05-springb|["Diana Cecilia Flores Chacón, Juan Sebastián Camacho Fernández, Andrés Wiliam Galarza Salguero, Harold Ruddy Quispe Hilari, José Alejandro Díaz Ali, Michelle Ruth Poma Ramos, Daron Augusto Baldiviezo Aillon"]|
-|06|grupo-06-springb|[José Aruquipa, Miguel Calderón, Herlan Callisaya, Oscar Luján, Edith Marca, Luz Tinta, Daniel Zeballos]|
-|07|grupo-07-springb|[Lenz Abad Alanoca Ojeda,Juan Vidal Mamani Riveros,Herlan Choque Flores,Lorgio Emilio Chura Carrillo,Jesús Alejandro Cruz,Juan Carlos Limachi Maydana]|
-|08|grupo-08-springb|[Amílcar Josías Yujra Chipana, Luis Alfredo Quispe Ortiz, Alan Sergio Yupanqui Corini, Yehonatan Oscar Limachi Corina, Melany Abril Mamani Chamizo, Limbert Mamani Quiñajo, Ronald Choque Sillo]|
-|09|grupo-09-springb|[Bautista Coaquira Jose Abraham, Laura Rios Lizbeth Fabiola, Penélope Gema Copana Fuentes, Sasha Johannes konrad Arana Ramirez, Callisaya Vargas Marco Ronaldo, Callisaya Lanes Shelly Anahi, Choque Gutiérrez Manuel Alejandro, Elías Daniel Beltrán Selaez]|
-|10|grupo-10-springb|[María Teresa Aspiazu Sánchez, Jesús Abed Herrera Sirpa, Joel Alejandro Pérez Murillo, Ariadne Checcid Quiroz Coila, Brandom Jhoseff Amezaga Garrido Cael Mathew Cuevas Alconini, José Alfredo Choque Choque]|
-|11|grupo-11-springb|[Israel Andrés Quenta Pomacusi, Edson Javier Mamani Ticona,Jhamil Elías Mamani Colque,Alexander Nataniel Castillo Centellas,Adrián Marcelo Requena Oros,Maritza Zárate Paco ,Jhoel Alexander Chipana Paye]|
-|12|grupo-12-springb|[Víctor Bernardo Quispe Rojas,Gabriel Omar Cumara Patty,Cristian William Bautista Villcacuti,Rosa Katerine Gonzales Choque,Alvin Angel Magne Aruquipa,Blanca Nataly Chipana Orellana,Ronald Mendoza Caspa,José Julián Quinteros Mollinedo]|
-|13|grupo-13-springb|[Quispe Adriana, Carvajal Ester, Tirado Nayheli, Canaviri Carlos, Loza Humberto, Mamani Sarahi, Ticona Alex]|
-|14|grupo-14-springb|[Gutiérrez Challapa Daniel Rodrigo, Hidalgo Colque Ariana Daniela,Huanca Tito José Manuel,Mamani Mamani Mirko Sony,Quecaño Uruña Erika,Quiñajo Berrios Melina Viana]|
-|15|grupo-15-springb|[Julio Picavia Saravia, Carlos Callisaya Rosas, Iver Mamani, Amiel Natanieli Méndez Vargas, Adriana Valeria Fernández Flores, Luz Edely Aruquipa Ururi]|
-|16|Grupo-16-springb|[Miranda Aguirre Carlos Manuel, Tapia Cortez Genesis Jalid, Aarón Oswaldo Nina Calzada, Lucas Calderon, David Mamani, Rudy Ibarra, Julio Cesar Ticona, José Alejandro Fernández Sánchez ]|
+2. Configurar credenciales en `application.properties`:
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/universidad
+spring.datasource.username=udev
+spring.datasource.password=1234
+```
+
+### Configuración de Redis
+```properties
+spring.redis.host=localhost
+spring.redis.port=6379
+```
+
+## Roles y Permisos
+
+### 1. ADMIN
+- Gestión completa de usuarios
+- Gestión de materias
+- Asignación de profesores
+- Acceso a todos los endpoints
+
+### 2. DOCENTE
+- Ver inscripciones de sus materias
+- Actualizar notas
+- Ver listado de estudiantes
+- Endpoints permitidos:
+  - GET `/api/inscripciones/materia/{materiaId}`
+  - PUT `/api/inscripciones/{id}/nota`
+  - GET `/api/materias/profesor/{profesorId}`
+
+### 3. ESTUDIANTE
+- Ver materias disponibles
+- Inscribirse a materias
+- Ver sus inscripciones
+- Endpoints permitidos:
+  - GET `/api/materias`
+  - POST `/api/inscripciones/estudiante/{estudianteId}/materia/{materiaId}`
+  - GET `/api/inscripciones/estudiante/{estudianteId}`
+
+## Endpoints Principales
+
+### Autenticación
+- POST `/api/auth/login` - Login de usuario
+- POST `/api/auth/refresh` - Renovar token JWT
+
+### Usuarios
+- GET `/api/usuarios` - Listar usuarios (ADMIN)
+- POST `/api/usuarios` - Crear usuario (ADMIN)
+- PUT `/api/usuarios/{id}` - Actualizar usuario (ADMIN)
+- DELETE `/api/usuarios/{id}` - Eliminar usuario (ADMIN)
+
+### Materias
+- GET `/api/materias` - Listar materias
+- POST `/api/materias` - Crear materia (ADMIN)
+- PUT `/api/materias/{id}` - Actualizar materia (ADMIN)
+- DELETE `/api/materias/{id}` - Eliminar materia (ADMIN)
+- PUT `/api/materias/{id}/profesor` - Asignar profesor (ADMIN)
+
+### Inscripciones
+- POST `/api/inscripciones/estudiante/{estudianteId}/materia/{materiaId}` - Crear inscripción
+- PUT `/api/inscripciones/{id}/estado` - Actualizar estado
+- PUT `/api/inscripciones/{id}/nota` - Actualizar nota
+- GET `/api/inscripciones/estudiante/{estudianteId}` - Ver inscripciones de estudiante
+- GET `/api/inscripciones/materia/{materiaId}` - Ver inscripciones de materia
+
+## Caché
+El sistema utiliza Redis para el caché con las siguientes configuraciones:
+- Inscripciones: 30 minutos
+- Materias: 60 minutos
+- Estudiantes: 45 minutos
+
+## Documentación API
+La documentación completa de la API está disponible en:
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/api-docs`
 
 
+### Credenciales de Prueba
+1. Administrador:
+   - Email: admin@universidad.com
+   - User: admin
+   - Password: admin123
+
+2. Profesor:
+   - Email: profesor1@universidad.com
+   - User: docente
+   - Password: admin123
+
+3. Estudiante:
+   - Email: estudiante1@universidad.com
+   - User: estudiante
+   - Password: admin123
+
+## Manejo de Errores
+El sistema implementa un manejador global de excepciones que proporciona respuestas estructuradas para:
+- Errores de validación
+- Errores de autenticación
+- Errores de base de datos
+- Errores generales
+
+## Seguridad
+- Autenticación mediante JWT
+- Tokens con expiración de 24 horas
+- Endpoints protegidos por roles
+- Validación de datos de entrada
 
 
----
+## 📚 Endpoints Detallados
+
+### 🔐 Autenticación
+
+#### POST `/api/auth/login`
+- **Descripción:** Inicia sesión y retorna un token JWT.
+- **Validaciones:**
+  - `username`: obligatorio, formato email válido
+  - `password`: obligatorio
+- **Respuesta:** Token JWT y datos del usuario.
+image.png
+
+#### POST `/api/auth/refresh`
+- **Descripción:** Renueva el token JWT si el actual está por expirar.
+- **Validaciones:**
+  - Token JWT válido en el header
+- **Respuesta:** Nuevo token JWT.
+
+### 👤 Usuarios
+
+#### GET `/api/usuarios`
+- **Descripción:** Lista todos los usuarios registrados.
+- **Validaciones:**
+  - Solo accesible por usuarios con rol ADMIN
+- **Respuesta:** Lista de usuarios.
+
+#### POST `/api/usuarios`
+- **Descripción:** Crea un nuevo usuario.
+- **Validaciones:**
+  - `nombre`: obligatorio, no vacío
+  - `apellido`: obligatorio, no vacío
+  - `email`: obligatorio, formato email válido, único
+  - `username`: obligatorio, único
+  - `password`: obligatorio, mínimo 6 caracteres
+  - `roles`: al menos uno
+- **Respuesta:** Usuario creado.
+
+#### PUT `/api/usuarios/{id}`
+- **Descripción:** Actualiza los datos de un usuario existente.
+- **Validaciones:**
+  - `id`: debe existir
+  - Campos como en POST, pero pueden ser opcionales según implementación
+- **Respuesta:** Usuario actualizado.
+
+#### DELETE `/api/usuarios/{id}`
+- **Descripción:** Elimina (o desactiva) un usuario.
+- **Validaciones:**
+  - `id`: debe existir
+- **Respuesta:** Sin contenido (204) o mensaje de éxito.
+
+### 📚 Materias
+
+#### GET `/api/materias`
+- **Descripción:** Lista todas las materias disponibles.
+- **Validaciones:** Ninguna
+- **Respuesta:** Lista de materias.
+
+#### POST `/api/materias`
+- **Descripción:** Crea una nueva materia.
+- **Validaciones:**
+  - `nombre`: obligatorio, único
+  - `descripcion`: obligatorio
+  - `cupoMaximo`: obligatorio, mayor a 0
+- **Respuesta:** Materia creada.
+
+#### PUT `/api/materias/{id}`
+- **Descripción:** Actualiza los datos de una materia.
+- **Validaciones:**
+  - `id`: debe existir
+  - Campos como en POST
+- **Respuesta:** Materia actualizada.
+
+#### DELETE `/api/materias/{id}`
+- **Descripción:** Elimina una materia.
+- **Validaciones:**
+  - `id`: debe existir
+- **Respuesta:** Sin contenido (204) o mensaje de éxito.
+
+#### PUT `/api/materias/{id}/profesor`
+- **Descripción:** Asigna un profesor a una materia.
+- **Validaciones:**
+  - `id`: debe existir
+  - `profesorId`: debe existir y estar activo
+- **Respuesta:** Materia con profesor asignado.
+
+#### GET `/api/materias/profesor/{profesorId}`
+- **Descripción:** Lista materias asignadas a un profesor.
+- **Validaciones:**
+  - `profesorId`: debe existir
+- **Respuesta:** Lista de materias.
 
 
-## 📦 Cómo trabajar en tu rama
+### 📝 Inscripciones
 
-1. Clona el repositorio:
-```bash
-git clone https://github.com/LiaRos-ai/RegistroUniversitario.git
+#### POST `/api/inscripciones/estudiante/{estudianteId}/materia/{materiaId}`
+- **Descripción:** Inscribe a un estudiante en una materia.
+- **Validaciones:**
+  - `estudianteId`: debe existir y estar activo
+  - `materiaId`: debe existir y estar activa
+  - No debe estar ya inscrito
+  - Debe haber cupo disponible
+  - Debe cumplir con los prerrequisitos
+- **Respuesta:** Inscripción creada.
+
+#### PUT `/api/inscripciones/{id}/estado`
+- **Descripción:** Actualiza el estado de una inscripción.
+- **Validaciones:**
+  - `id`: debe existir
+  - `estado`: valor permitido (ACTIVA, APROBADA, REPROBADA, CANCELADA)
+- **Respuesta:** Inscripción actualizada.
+
+#### PUT `/api/inscripciones/{id}/nota`
+- **Descripción:** Actualiza la nota de una inscripción.
+- **Validaciones:**
+  - `id`: debe existir
+  - `nota`: entre 0 y 10
+- **Respuesta:** Inscripción con nota actualizada.
+
+#### DELETE `/api/inscripciones/{id}`
+- **Descripción:** Elimina (o cancela) una inscripción.
+- **Validaciones:**
+  - `id`: debe existir
+- **Respuesta:** Sin contenido (204) o mensaje de éxito.
+
+#### GET `/api/inscripciones/{id}`
+- **Descripción:** Obtiene una inscripción por su ID.
+- **Validaciones:**
+  - `id`: debe existir
+- **Respuesta:** Detalle de la inscripción.
+
+#### GET `/api/inscripciones/estudiante/{estudianteId}`
+- **Descripción:** Lista todas las inscripciones de un estudiante.
+- **Validaciones:**
+  - `estudianteId`: debe existir
+- **Respuesta:** Lista de inscripciones.
+
+#### GET `/api/inscripciones/materia/{materiaId}`
+- **Descripción:** Lista todas las inscripciones de una materia.
+- **Validaciones:**
+  - `materiaId`: debe existir
+- **Respuesta:** Lista de inscripciones.
+
+#### GET `/api/inscripciones/estudiante/{estudianteId}/activas`
+- **Descripción:** Lista inscripciones activas de un estudiante.
+- **Validaciones:**
+  - `estudianteId`: debe existir
+- **Respuesta:** Lista de inscripciones activas.

@@ -1,17 +1,16 @@
-package com.universidad.registro.repository;
+package com.universidad.repository;
 
-
-import com.universidad.registro.model.Usuario;
+import com.universidad.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-
 import java.util.Optional;
-
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByUsername(String username);
+
     Boolean existsByUsername(String username);
+
     Boolean existsByEmail(String email);
 }

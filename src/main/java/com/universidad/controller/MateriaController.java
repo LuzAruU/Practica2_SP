@@ -33,7 +33,7 @@ public class MateriaController {
         logger.info("[MATERIA] Inicio obtenerTodasLasMaterias: {}", inicio);
         List<MateriaDTO> result = materiaService.obtenerTodasLasMaterias();
         long fin = System.currentTimeMillis();
-        logger.info("[MATERIA] Fin obtenerTodasLasMaterias: {} (Duracion: {} ms)", fin, (fin-inicio));
+        logger.info("[MATERIA] Fin obtenerTodasLasMaterias: {} (Duracion: {} ms)", fin, (fin - inicio));
         return ResponseEntity.ok(result);
     }
 
@@ -43,7 +43,7 @@ public class MateriaController {
         logger.info("[MATERIA] Inicio obtenerMateriaPorId: {}", inicio);
         MateriaDTO materia = materiaService.obtenerMateriaPorId(id);
         long fin = System.currentTimeMillis();
-        logger.info("[MATERIA] Fin obtenerMateriaPorId: {} (Duracion: {} ms)", fin, (fin-inicio));
+        logger.info("[MATERIA] Fin obtenerMateriaPorId: {} (Duracion: {} ms)", fin, (fin - inicio));
         if (materia == null) {
             return ResponseEntity.notFound().build();
         }
@@ -61,17 +61,20 @@ public class MateriaController {
 
     @PostMapping
     public ResponseEntity<MateriaDTO> crearMateria(@RequestBody MateriaDTO materia) {
-        //MateriaDTO materiaDTO = new MateriaDTO(materia.getId(), materia.getNombre(), materia.getCodigoUnico());
+        // MateriaDTO materiaDTO = new MateriaDTO(materia.getId(), materia.getNombre(),
+        // materia.getCodigoUnico());
         MateriaDTO nueva = materiaService.crearMateria(materia);
         return ResponseEntity.status(HttpStatus.CREATED).body(nueva);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<MateriaDTO> actualizarMateria(@PathVariable Long id, @RequestBody MateriaDTO materia) {
-        //MateriaDTO materiaDTO = new MateriaDTO(materia.getId(), materia.getNombreMateria(), materia.getCodigoUnico());
-        MateriaDTO actualizadaDTO = materiaService.actualizarMateria(id, materia);
-        //Materia actualizada = new Materia(actualizadaDTO.getId(), actualizadaDTO.getNombre(), actualizadaDTO.getCodigoUnico());
-        return ResponseEntity.ok(actualizadaDTO);
+        try {
+            MateriaDTO actualizadaDTO = materiaService.actualizarMateria(id, materia);
+            return ResponseEntity.ok(actualizadaDTO);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -80,8 +83,10 @@ public class MateriaController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/formaria-circulo/{materiaId}/{prerequisitoId}") // Endpoint para verificar si una materia formaría un círculo con un prerequisito
-    @Transactional // Anotación que indica que este método debe ejecutarse dentro de una transacción
+    @GetMapping("/formaria-circulo/{materiaId}/{prerequisitoId}") // Endpoint para verificar si una materia formaría un
+                                                                  // círculo con un prerequisito
+    @Transactional // Anotación que indica que este método debe ejecutarse dentro de una
+                   // transacción
     public ResponseEntity<Boolean> formariaCirculo(@PathVariable Long materiaId, @PathVariable Long prerequisitoId) {
         MateriaDTO materiaDTO = materiaService.obtenerMateriaPorId(materiaId); // Obtiene la materia por su ID
         if (materiaDTO == null) { // Verifica si la materia existe
@@ -90,10 +95,31 @@ public class MateriaController {
         Materia materia = new Materia(materiaDTO.getId(), materiaDTO.getNombreMateria(), materiaDTO.getCodigoUnico());
         // Crea una nueva instancia de Materia con los datos obtenidos
         // Verifica si agregar el prerequisito formaría un círculo
-        boolean circulo = materia.formariaCirculo(prerequisitoId); // Llama al método formariaCirculo de la clase Materia
+        boolean circulo = materia.formariaCirculo(prerequisitoId); // Llama al método formariaCirculo de la clase
+                                                                   // Materia
         if (circulo) { // Si formaría un círculo, retorna un error 400 Bad Request
             return ResponseEntity.badRequest().body(circulo);
         }
         return ResponseEntity.ok(circulo);
+    }
+
+    @PutMapping("/{id}/docente")
+    public ResponseEntity<MateriaDTO> asignarDocente(@PathVariable Long id, @RequestParam Long docenteId) {
+        try {
+            MateriaDTO actualizada = materiaService.asignarDocente(id, docenteId);
+            return ResponseEntity.ok(actualizada);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/docente/{docenteId}")
+    public ResponseEntity<List<MateriaDTO>> obtenerMateriasPorDocente(@PathVariable Long docenteId) {
+        try {
+            List<MateriaDTO> materias = materiaService.obtenerMateriasPorDocente(docenteId);
+            return ResponseEntity.ok(materias);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -4,11 +4,14 @@ import com.universidad.model.Materia;
 import com.universidad.repository.MateriaRepository;
 import com.universidad.service.IMateriaService;
 import com.universidad.dto.MateriaDTO;
+import com.universidad.model.Docente;
+import com.universidad.repository.DocenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,18 +22,25 @@ public class MateriaServiceImpl implements IMateriaService {
     @Autowired
     private MateriaRepository materiaRepository;
 
+    @Autowired
+    private DocenteRepository docenteRepository;
+
     // Método utilitario para mapear Materia a MateriaDTO
     private MateriaDTO mapToDTO(Materia materia) {
-        if (materia == null) return null;
+        if (materia == null)
+            return null;
         return MateriaDTO.builder()
                 .id(materia.getId())
                 .nombreMateria(materia.getNombreMateria())
                 .codigoUnico(materia.getCodigoUnico())
                 .creditos(materia.getCreditos())
-                .prerequisitos(materia.getPrerequisitos() != null ?
-                    materia.getPrerequisitos().stream().map(Materia::getId).collect(Collectors.toList()) : null)
-                .esPrerequisitoDe(materia.getEsPrerequisitoDe() != null ?
-                    materia.getEsPrerequisitoDe().stream().map(Materia::getId).collect(Collectors.toList()) : null)
+                .docenteId(materia.getDocente() != null ? materia.getDocente().getId() : null)
+                .prerequisitos(materia.getPrerequisitos() != null
+                        ? materia.getPrerequisitos().stream().map(Materia::getId).collect(Collectors.toList())
+                        : null)
+                .esPrerequisitoDe(materia.getEsPrerequisitoDe() != null
+                        ? materia.getEsPrerequisitoDe().stream().map(Materia::getId).collect(Collectors.toList())
+                        : null)
                 .build();
     }
 
@@ -43,7 +53,7 @@ public class MateriaServiceImpl implements IMateriaService {
     @Override
     @Cacheable(value = "materia", key = "#id")
     public MateriaDTO obtenerMateriaPorId(Long id) {
-        return materiaRepository.findById(id).map(this::mapToDTO).orElse(null);
+        return materiaRepository.findMateriaById(id).map(this::mapToDTO).orElse(null);
     }
 
     @Override
@@ -67,10 +77,12 @@ public class MateriaServiceImpl implements IMateriaService {
     }
 
     @Override
+    @Transactional
     @CachePut(value = "materia", key = "#id")
     @CacheEvict(value = "materias", allEntries = true)
     public MateriaDTO actualizarMateria(Long id, MateriaDTO materiaDTO) {
-        Materia materia = materiaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Materia not found"));
+        Materia materia = materiaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Materia not found"));
         materia.setNombreMateria(materiaDTO.getNombreMateria());
         materia.setCodigoUnico(materiaDTO.getCodigoUnico());
         materia.setCreditos(materiaDTO.getCreditos());
@@ -80,8 +92,34 @@ public class MateriaServiceImpl implements IMateriaService {
     }
 
     @Override
-    @CacheEvict(value = {"materia", "materias"}, allEntries = true)
+    @CacheEvict(value = { "materia", "materias" }, allEntries = true)
     public void eliminarMateria(Long id) {
         materiaRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    @CachePut(value = "materia", key = "#id")
+    @CacheEvict(value = "materias", allEntries = true)
+    public MateriaDTO asignarDocente(Long id, Long docenteId) {
+        Materia materia = materiaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Materia not found"));
+        Docente docente = docenteRepository.findById(docenteId)
+                .orElseThrow(() -> new IllegalArgumentException("Docente not found"));
+        materia.setDocente(docente);
+        Materia updatedMateria = materiaRepository.save(materia);
+        return mapToDTO(updatedMateria);
+    }
+
+    @Override
+    @Cacheable(value = "materiasPorDocente", key = "#docenteId")
+    public List<MateriaDTO> obtenerMateriasPorDocente(Long docenteId) {
+        if (!docenteRepository.existsById(docenteId)) {
+            throw new IllegalArgumentException("Docente not found");
+        }
+        return materiaRepository.findByDocenteId(docenteId)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 }

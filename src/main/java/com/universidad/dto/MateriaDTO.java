@@ -13,11 +13,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class MateriaDTO implements Serializable {
-    
+
     private Long id;
     private String nombreMateria;
     private String codigoUnico;
     private Integer creditos;
+    private Long docenteId;
 
     /**
      * Lista de IDs de materias que son prerequisitos para esta materia.
